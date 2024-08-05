@@ -167,17 +167,17 @@ class JWTAuthHandler:
         return user_is_superuser
 
     @staticmethod
-    def configure_urls(urls):
+    def configure_urls(urlpatterns):
         """
-        Configure Django urls for JWT authentication.
+        Configure Django urlpatterns for JWT authentication.
         """
         from django.urls import path
         from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
         # add jwt urls if not already added
-        if 'rest_framework_simplejwt.views.TokenObtainPairView' not in urls.urlpatterns:
-            urls.urlpatterns.append(path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'))
-        if 'rest_framework_simplejwt.views.TokenRefreshView' not in urls.urlpatterns:
-            urls.urlpatterns.append(path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'))
-        if 'rest_framework_simplejwt.views.TokenVerifyView' not in urls.urlpatterns:
-            urls.urlpatterns.append(path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'))
+        if 'rest_framework_simplejwt.views.TokenObtainPairView' not in urlpatterns:
+            urlpatterns.append(path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'))
+        if 'rest_framework_simplejwt.views.TokenRefreshView' not in urlpatterns:
+            urlpatterns.append(path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'))
+        if 'rest_framework_simplejwt.views.TokenVerifyView' not in urlpatterns:
+            urlpatterns.append(path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'))
