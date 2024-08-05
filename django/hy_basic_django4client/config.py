@@ -1,6 +1,24 @@
 # configure django with jwt and whitenoise
 import os
 
+
+def configure_cors(settings, cors_allowed_origins=None, csrf_trusted_origins=None, allowed_hosts=None):
+    if not hasattr(settings, 'CORS_ALLOWED_ORIGINS'):
+        settings.CORS_ALLOWED_ORIGINS = cors_allowed_origins or []
+    elif cors_allowed_origins:
+        settings.CORS_ALLOWED_ORIGINS.extend(cors_allowed_origins)
+
+    if not hasattr(settings, 'CSRF_TRUSTED_ORIGINS'):
+        settings.CSRF_TRUSTED_ORIGINS = csrf_trusted_origins or []
+    elif csrf_trusted_origins:
+        settings.CSRF_TRUSTED_ORIGINS.extend(csrf_trusted_origins)
+
+    if not hasattr(settings, 'ALLOWED_HOSTS'):
+        settings.ALLOWED_HOSTS = allowed_hosts or []
+    elif allowed_hosts:
+        settings.ALLOWED_HOSTS.extend(allowed_hosts)
+
+
 def configure_django(settings):
     """
     Configure Django settings for JWT authentication and Whitenoise.
@@ -32,8 +50,20 @@ def configure_django(settings):
             'DEFAULT_PERMISSION_CLASSES': ( 
                 'rest_framework.permissions.IsAuthenticated', 
             ), 
-        } 
+        }
+    
+    # handle cors and csrf
+    if 'corsheaders' not in settings.INSTALLED_APPS:
+        settings.INSTALLED_APPS.append('corsheaders')
+    if 'corsheaders.middleware.CorsMiddleware' not in settings.MIDDLEWARE:
+        settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.common.CommonMiddleware'), 'corsheaders.middleware.CorsMiddleware')
+    if 'django.middleware.csrf.CsrfViewMiddleware' not in settings.MIDDLEWARE:
+        settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.common.CommonMiddleware') + 1, 'django.middleware.csrf.CsrfViewMiddleware')
 
+    if not hasattr(settings, 'CSRF_COOKIE_PATH'):
+        settings.CSRF_COOKIE_PATH = '/'
+    if not hasattr(settings, 'SESSION_COOKIE_PATH'):
+        settings.SESSION_COOKIE_PATH = '/'
 
     # JWT REST FRAMEWORK
     if 'rest_framework_simplejwt' not in settings.INSTALLED_APPS:

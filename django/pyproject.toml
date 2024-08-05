@@ -9,6 +9,7 @@ dependencies = [
     "Django>=4.2.7",
     'djangorestframework',
     'djangorestframework-simplejwt',
+    'django-cors-headers',
     'whitenoise',
 ]
 requires-python = ">=3.8"
