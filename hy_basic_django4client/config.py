@@ -78,12 +78,12 @@ def configure_django(settings):
     }
     
     # Configure static files for Whitenoise
-    if not settings.STATIC_ROOT:
+    if not hasattr(settings, 'STATIC_ROOT' ) or not settings.STATIC_ROOT:
         settings.STATIC_ROOT = os.path.join(settings.BASE_DIR.parent, 'static') 
         # check if the static folder exists and create it if not
         if not os.path.exists(settings.STATIC_ROOT):
             os.makedirs(settings.STATIC_ROOT)
-    if not settings.STATIC_URL:
+    if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
         settings.STATIC_URL = '/static/'
 
     # settings.STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
