@@ -56,6 +56,14 @@ class BF4DWebServerApi {
     var requestHeaders = {"Authorization": "Token ${sessionToken!}"};
     return requestHeaders;
   }
+
+  static String getApiUrl(String apiPath) {
+    return "${WEBAPP_URL}api/$apiPath/";
+  }
+
+  static String getUrl(String path) {
+    return "$WEBAPP_URL$path/";
+  }
 }
 
 /// A simple class that executes a get/put/post request to the server.
