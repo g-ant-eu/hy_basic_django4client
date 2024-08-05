@@ -8,6 +8,7 @@ const doLocal = String.fromEnvironment('DOLOCAL', defaultValue: 'false');
 const localPort = String.fromEnvironment('LOCALPORT', defaultValue: '8000');
 
 const WEBAPP_URL = doLocal == 'true' ? "http://localhost:$localPort/" : "../";
+const ADMIN = "admin/";
 const NETWORKERROR_PREFIX = "ERROR:";
 const KEY_USER = "user";
 const KEY_PWD = "pwd";
@@ -15,6 +16,10 @@ const KEY_TOKEN = "token";
 
 class BF4DWebServerApi {
   static String API_LOGIN = "${WEBAPP_URL}api/login/";
+
+  static void goToAdmin() {
+    html.window.open("$WEBAPP_URL$ADMIN", 'admin');
+  }
 
   /// Login to get a token using credentials.
   ///
