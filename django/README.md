@@ -9,9 +9,15 @@ Inside settings.py add at the end:
 import hy_basic_django4client 
 import sys
 hy_basic_django4client.config.configure_django(sys.modules[__name__])
+
+hy_basic_django4client.config.configure_cors(s,
+    allowed_hosts=[".localhost","0.0.0.0","127.0.0.1","[::1]","django"],
+    cors_allowed_origins=["http://localhost:6677","http://localhost:8081"],
+    csrf_trusted_origins=["http://localhost:6677","http://localhost:8081"]    
+    )
 ```
 
-This enables the project to use JWT and Whitenoise.
+This enables the project to use JWT and Whitenoise as well as basic cors and csrf..
 
 
 Inside urls.py add the url configuration:
