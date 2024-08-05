@@ -41,8 +41,8 @@ def configure_django(settings):
 
     # Whitenoise
     if 'whitenoise.runserver_nostatic' not in settings.INSTALLED_APPS:
-        settings.INSTALLED_APPS.append('whitenoise.runserver_nostatic')
-        
+        # add it after django.contrib.messages
+        settings.INSTALLED_APPS.insert(settings.INSTALLED_APPS.index('django.contrib.messages') + 1, 'whitenoise.runserver_nostatic')
     
     # Add middleware for Whitenoise
     if 'whitenoise.middleware.WhiteNoiseMiddleware' not in settings.MIDDLEWARE:
