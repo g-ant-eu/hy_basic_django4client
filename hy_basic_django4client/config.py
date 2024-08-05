@@ -10,6 +10,7 @@ def configure_django(settings):
     # make sure rest framework is configured
     if 'rest_framework' not in settings.INSTALLED_APPS:
         settings.INSTALLED_APPS.append('rest_framework')
+        settings.INSTALLED_APPS.append('rest_framework.authtoken')
         settings.REST_FRAMEWORK = { 
             'DEFAULT_RENDERER_CLASSES': [ 
                 'rest_framework.renderers.JSONRenderer', 
