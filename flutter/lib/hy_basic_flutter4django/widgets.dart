@@ -63,13 +63,6 @@ class LoginPage {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(
-                  height: 200.0,
-                  child: Image.asset(
-                    "assets/smash_logo.png",
-                    fit: BoxFit.contain,
-                  ),
-                ),
                 SizedBox(height: 45.0),
                 userNameField,
                 SizedBox(height: 25.0),

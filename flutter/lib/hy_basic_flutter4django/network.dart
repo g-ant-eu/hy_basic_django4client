@@ -47,8 +47,12 @@ class BF4DWebServerApi {
       headers ??= {};
       headers["X-CSRFToken"] = csrfToken;
     }
-
-    return await http.post(uri, headers: headers, body: body);
+    try {
+      return await http.post(uri, headers: headers, body: body);
+    } catch (e) {
+      print("Error in csrfPost: $e");
+      rethrow;
+    }
   }
 
   static Map<String, String> getTokenHeader() {
