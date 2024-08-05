@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hy_basic_flutter4django/hy_basic_flutter4django/network.dart';
 
 class LoginPage {
-  Widget getLoginWidget(
+  static Widget getLoginWidget(
       BuildContext context, Function onLogin, Color buttonColor,
       {String? errortext}) {
     TextStyle loginTextStyle = TextStyle(fontFamily: 'Arial', fontSize: 20.0);
