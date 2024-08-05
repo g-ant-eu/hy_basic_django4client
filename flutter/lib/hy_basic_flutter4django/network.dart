@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 import 'dart:html' as html;
 
 const doLocal = String.fromEnvironment('DOLOCAL', defaultValue: 'false');
