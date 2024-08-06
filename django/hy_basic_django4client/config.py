@@ -56,8 +56,9 @@ def configure_django(settings):
     
     # make sure rest framework is configured
     if 'rest_framework' not in settings.INSTALLED_APPS:
-        settings.INSTALLED_APPS.append('rest_framework')
-        settings.INSTALLED_APPS.append('rest_framework.authtoken')
+        index = lastDjangoIndex(settings)
+        settings.INSTALLED_APPS.insert(index, 'rest_framework')
+        settings.INSTALLED_APPS.insert(index+1, 'rest_framework.authtoken')
         settings.REST_FRAMEWORK = { 
             'DEFAULT_RENDERER_CLASSES': [ 
                 'rest_framework.renderers.JSONRenderer', 
@@ -83,7 +84,8 @@ def configure_django(settings):
     
     # handle cors and csrf
     if 'corsheaders' not in settings.INSTALLED_APPS:
-        settings.INSTALLED_APPS.append('corsheaders')
+        index = lastDjangoIndex(settings)
+        settings.INSTALLED_APPS.insert(index, 'corsheaders')
     if 'corsheaders.middleware.CorsMiddleware' not in settings.MIDDLEWARE:
         settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.common.CommonMiddleware'), 'corsheaders.middleware.CorsMiddleware')
     if 'django.middleware.csrf.CsrfViewMiddleware' not in settings.MIDDLEWARE:
@@ -96,8 +98,12 @@ def configure_django(settings):
 
     # JWT REST FRAMEWORK
     if 'rest_framework_simplejwt' not in settings.INSTALLED_APPS:
-        settings.INSTALLED_APPS.append('rest_framework_simplejwt')
-        settings.INSTALLED_APPS.append('rest_framework_simplejwt.token_blacklist') # needed for logout' 
+        # add after the last app that starts with 'django'
+        index = lastDjangoIndex(settings)
+        settings.INSTALLED_APPS.insert(index, 'rest_framework_simplejwt')
+        settings.INSTALLED_APPS.insert(index+1, 'rest_framework_simplejwt.token_blacklist') # needed for logout' 
+        
+        
 
     # Whitenoise
     if 'whitenoise.runserver_nostatic' not in settings.INSTALLED_APPS:
@@ -146,12 +152,6 @@ def configure_django(settings):
     if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
         settings.STATIC_URL = f'/{staticFolderName}/'
 
-    # STORAGES = {
-    #     # ...
-    #     "static": {
-    #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    #     },
-    # }
     if not hasattr(settings, 'STORAGES'):
         settings.STORAGES = {
             f"{staticFolderName}": {
@@ -159,4 +159,9 @@ def configure_django(settings):
             },
         }
 
-    # settings.STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+def lastDjangoIndex(settings):
+    index = 0
+    for i, app in enumerate(settings.INSTALLED_APPS):
+        if app.startswith('django'):
+            index = i
+    return index
