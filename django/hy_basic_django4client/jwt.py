@@ -1,4 +1,3 @@
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import AccessToken 
 from django.contrib.auth import get_user_model 
@@ -13,6 +12,9 @@ from django.contrib.auth import authenticate
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_403_FORBIDDEN
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import  csrf_exempt
+from django.utils.decorators import method_decorator
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -48,6 +50,19 @@ class RESTAuthHandler:
             except Token.DoesNotExist: 
                 return None 
 
+class CrsfHandler:
+    """
+    Helper class for CSRF handling.
+    """
+
+    @staticmethod
+    def get_csrf_token(request):
+        """
+        Get CSRF token.
+        """
+        from django.middleware.csrf import get_token
+        token = get_token(request)
+        return JsonResponse({'csrfToken': token})
 
 @api_view(["POST"])
 @permission_classes((AllowAny,))
@@ -64,6 +79,11 @@ def login(request):
     token, _ = Token.objects.get_or_create(user=user)
     return Response({'token': token.key, 'id': user.id}, status=HTTP_200_OK)
 
+@api_view(["GET"])
+@method_decorator(csrf_exempt, name='dispatch')
+@permission_classes((IsAuthenticated,))
+def get_csrf_token(request):
+    return CrsfHandler.get_csrf_token(request)
 
 class JWTAuthHandler:
     """
@@ -209,6 +229,8 @@ class JWTAuthHandler:
             urlpatterns.append(path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'))
         if 'api/login/' not in urlpatterns:
             urlpatterns.append(path('api/login/', login, name='login'))
+        if 'api/csrf/' not in urlpatterns:
+            urlpatterns.append(path('api/csrf/', get_csrf_token, name='csrf'))
 
 
 
