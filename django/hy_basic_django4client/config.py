@@ -157,6 +157,9 @@ def configure_django(settings):
             f"{staticFolderName}": {
                 "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
             },
+            f"staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            },
         }
 
     if not hasattr(settings, 'MEDIA_ROOT'):
