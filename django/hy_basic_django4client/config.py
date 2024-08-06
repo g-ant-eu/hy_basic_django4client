@@ -2,26 +2,55 @@
 import os
 
 
-def configure_cors(settings, cors_allowed_origins=None, csrf_trusted_origins=None, allowed_hosts=None):
-    if not hasattr(settings, 'CORS_ALLOWED_ORIGINS'):
-        settings.CORS_ALLOWED_ORIGINS = cors_allowed_origins or []
-    elif cors_allowed_origins:
-        settings.CORS_ALLOWED_ORIGINS.extend(cors_allowed_origins)
+def configure_cors(settings, hosts=[], ports=[]):
+    """
+    Configure Django settings for CORS and CSRF.
 
-    if not hasattr(settings, 'CSRF_TRUSTED_ORIGINS'):
-        settings.CSRF_TRUSTED_ORIGINS = csrf_trusted_origins or []
-    elif csrf_trusted_origins:
-        settings.CSRF_TRUSTED_ORIGINS.extend(csrf_trusted_origins)
+    :param settings: Django settings module.
+    :param hosts: List of hosts to allow.
+    :param ports: List of ports to allow.
+    """
+    if "[::1]" not in hosts:
+        hosts.append("[::1]")
+    if "django" not in hosts:
+        hosts.append("django")
+
+    cors_allowed_origins = []
+    csrf_trusted_origins = []
+    allowed_hosts = []
+    for host in hosts:
+        for port in ports:
+            for h in ["http","https"]:
+                cors_allowed_origins.append(f"{h}://{host}:{port}")
+                csrf_trusted_origins.append(f"{h}://{host}:{port}")
+                allowed_hosts.append(f"{host}")
 
     if not hasattr(settings, 'ALLOWED_HOSTS'):
-        settings.ALLOWED_HOSTS = allowed_hosts or []
-    elif allowed_hosts:
-        settings.ALLOWED_HOSTS.extend(allowed_hosts)
+        settings.ALLOWED_HOSTS = []
+    if not hasattr(settings, 'CORS_ALLOWED_ORIGINS'):
+        settings.CORS_ALLOWED_ORIGINS = []
+    if not hasattr(settings, 'CSRF_TRUSTED_ORIGINS'):
+        settings.CSRF_TRUSTED_ORIGINS = []
+
+    if allowed_hosts:
+        for host in allowed_hosts:
+            if host not in settings.ALLOWED_HOSTS:
+                settings.ALLOWED_HOSTS.append(host)
+    if cors_allowed_origins:
+        for origin in cors_allowed_origins:
+            if origin not in settings.CORS_ALLOWED_ORIGINS:
+                settings.CORS_ALLOWED_ORIGINS.append(origin)
+    if csrf_trusted_origins:
+        for origin in csrf_trusted_origins:
+            if origin not in settings.CSRF_TRUSTED_ORIGINS:
+                settings.CSRF_TRUSTED_ORIGINS.append(origin)
 
 
 def configure_django(settings):
     """
     Configure Django settings for JWT authentication and Whitenoise.
+
+    :param settings: Django settings module.
     """
     from datetime import timedelta
     
