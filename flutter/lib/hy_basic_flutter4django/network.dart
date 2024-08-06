@@ -60,6 +60,23 @@ class BF4DWebServerApi {
     }
   }
 
+  /// Wrapper of put to add csrf token.
+  static Future<http.Response> csrfPut(Uri uri,
+      {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
+    // add csrf token for posts
+    var csrfToken = WebSession.getCsrfToken();
+    if (csrfToken != null) {
+      headers ??= {};
+      headers["X-CSRFToken"] = csrfToken;
+    }
+    try {
+      return await http.put(uri, headers: headers, body: body);
+    } catch (e) {
+      print("Error in csrfPut: $e");
+      rethrow;
+    }
+  }
+
   static Map<String, String> getTokenHeader() {
     var sessionToken = WebSession.getSessionToken();
     var requestHeaders = {"Authorization": "Token ${sessionToken!}"};
@@ -105,10 +122,10 @@ class BF4DWebCall {
     try {
       http.Response response;
       if (isPut) {
-        response = await http.put(Uri.parse(url),
+        response = await BF4DWebServerApi.csrfPut(Uri.parse(url),
             headers: requestHeaders, body: json.encode(data));
       } else if (isPost) {
-        response = await http.post(Uri.parse(url),
+        response = await BF4DWebServerApi.csrfPost(Uri.parse(url),
             headers: requestHeaders, body: json.encode(data));
       } else {
         response = await http.get(Uri.parse(url), headers: requestHeaders);
