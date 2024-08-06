@@ -106,10 +106,10 @@ def configure_django(settings):
     
     # Add middleware for Whitenoise
     if 'whitenoise.middleware.WhiteNoiseMiddleware' not in settings.MIDDLEWARE:
-        settings.MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+        settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.security.SecurityMiddleware') + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     
     # Configure JWT
-    # add jwt auth if nto already added
+    # add jwt auth if not already added
     if 'rest_framework_simplejwt.authentication.JWTAuthentication' not in settings.REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES']:
         settings.REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].append('rest_framework_simplejwt.authentication.JWTAuthentication')
     # add permission if not already added
@@ -137,12 +137,26 @@ def configure_django(settings):
     }
     
     # Configure static files for Whitenoise
+    staticFolderName = 'static'
     if not hasattr(settings, 'STATIC_ROOT' ) or not settings.STATIC_ROOT:
-        settings.STATIC_ROOT = os.path.join(settings.BASE_DIR.parent, 'static') 
+        settings.STATIC_ROOT = os.path.join(settings.BASE_DIR.parent, staticFolderName) 
         # check if the static folder exists and create it if not
         if not os.path.exists(settings.STATIC_ROOT):
             os.makedirs(settings.STATIC_ROOT)
     if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
-        settings.STATIC_URL = '/static/'
+        settings.STATIC_URL = f'/{staticFolderName}/'
+
+    # STORAGES = {
+    #     # ...
+    #     "static": {
+    #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    #     },
+    # }
+    if not hasattr(settings, 'STORAGES'):
+        settings.STORAGES = {
+            f"{staticFolderName}": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            },
+        }
 
     # settings.STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
