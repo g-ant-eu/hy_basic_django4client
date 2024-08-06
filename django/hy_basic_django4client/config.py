@@ -150,7 +150,7 @@ def configure_django(settings):
         if not os.path.exists(settings.STATIC_ROOT):
             os.makedirs(settings.STATIC_ROOT)
     if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
-        settings.STATIC_URL = f'/{staticFolderName}/'
+        settings.STATIC_URL = f'/' #{staticFolderName}/'
 
     if not hasattr(settings, 'STORAGES'):
         settings.STORAGES = {
