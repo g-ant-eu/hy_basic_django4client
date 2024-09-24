@@ -102,20 +102,24 @@ class BF4DWebCall {
   bool isPut = false;
   bool isPost = false;
   Map<String, String>? headers;
+  bool doAuth = true;
 
-  BF4DWebCall.get(this.url, {this.headers});
+  BF4DWebCall.get(this.url, {this.doAuth = true, this.headers});
 
-  BF4DWebCall.put(this.url, this.data, {this.headers}) {
+  BF4DWebCall.put(this.url, this.data, {this.doAuth = true, this.headers}) {
     isPut = true;
   }
 
-  BF4DWebCall.post(this.url, this.data, {this.headers}) {
+  BF4DWebCall.post(this.url, this.data, {this.doAuth = true, this.headers}) {
     isPost = true;
   }
 
   /// Get the response from the server.
   Future<void> run() async {
-    var requestHeaders = BF4DWebServerApi.getTokenHeader();
+    Map<String, String> requestHeaders = {};
+    if (doAuth) {
+      requestHeaders = BF4DWebServerApi.getTokenHeader();
+    }
     if (headers != null) {
       requestHeaders.addAll(headers!);
     }
