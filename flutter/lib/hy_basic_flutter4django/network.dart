@@ -161,8 +161,8 @@ class BF4DWebCall {
     return responseBody;
   }
 
-  /// Get the response body as a map.
-  Map<String, dynamic>? getResponseBodyAsMap() {
+  /// Get the response body as an object (list or map).
+  dynamic getResponseBodyAsMap() {
     if (responseBody == null) {
       return null;
     }
