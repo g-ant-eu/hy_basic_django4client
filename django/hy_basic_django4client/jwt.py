@@ -92,9 +92,9 @@ class JWTAuthHandler:
     Check django views like:
 
     def myview(request): 
-        user = JwtHandler.verify_jwt_token_from_request(request) 
+        user = JWTAuthHandler.verify_jwt_token_from_request(request) 
         if not user: 
-            return JwtHandler.get_error_result() 
+            return JWTAuthHandler.get_error_result() 
     """
 
     def __init__(self, request):
@@ -111,7 +111,7 @@ class JWTAuthHandler:
         return token
 
     @staticmethod 
-    def verify_jwt_token(token): 
+    def verify_jwt_token(token) -> User: 
         try: 
             access_token = AccessToken(token) 
             user_id = access_token['user_id'] 
@@ -122,7 +122,7 @@ class JWTAuthHandler:
             return None # Token is not valid or expired 
 
     @staticmethod 
-    def verify_jwt_token_from_request(request): 
+    def verify_jwt_token_from_request(request) -> User: 
         token = request.META.get('HTTP_AUTHORIZATION', '').split('Bearer ')[-1].strip() 
         if token: 
             return JWTAuthHandler.verify_jwt_token(token) 
@@ -132,7 +132,7 @@ class JWTAuthHandler:
     def get_error_result(): 
         return HttpResponseForbidden('Unauthorized') 
 
-    def get_user(self):
+    def get_user(self) -> User:
         """
         Get user from JWT token.
         """

@@ -79,7 +79,7 @@ class BF4DWebServerApi {
 
   static Map<String, String> getTokenHeader() {
     var sessionToken = WebSession.getSessionToken();
-    var requestHeaders = {"Authorization": "Token ${sessionToken!}"};
+    var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
     return requestHeaders;
   }
 
