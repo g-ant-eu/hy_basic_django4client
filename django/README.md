@@ -17,10 +17,10 @@ hy_basic_django4client.config.configure_cors(s,
     )
 ```
 
-This enables the project to use JWT and Whitenoise as well as basic cors and csrf..
+This enables the project to use JWT and Whitenoise as well as basic cors and csrf.
 
 
-Inside urls.py add the url configuration:
+Inside urls.py add the url configuration to configure JWT login:
 
 ```python
 from hy_basic_django4client.jwt import JWTAuthHandler
@@ -33,3 +33,12 @@ urlpatterns = [
 
 JWTAuthHandler.configure_urls(urlpatterns) # add url configuration for JWT tokens
 ```
+
+Then protect your views like:
+
+```python
+from hy_basic_django4client.jwt import JWTAuthHandler
+
+user = JWTAuthHandler(request)
+if not user:
+    return JWTAuthHandler.get_error_result()

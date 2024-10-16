@@ -13,9 +13,10 @@ const NETWORKERROR_PREFIX = "ERROR:";
 const KEY_USER = "user";
 const KEY_PWD = "pwd";
 const KEY_TOKEN = "token";
+const KEY_REFRESH_TOKEN = "refresh_token";
 
 class BF4DWebServerApi {
-  static String API_LOGIN = "${WEBAPP_URL}api/login/";
+  static String JWT_API_LOGIN = "${WEBAPP_URL}api/token/";
 
   static void goToAdmin() {
     html.window.open("$WEBAPP_URL$ADMIN", 'admin');
@@ -30,14 +31,20 @@ class BF4DWebServerApi {
       "password": pwd,
     };
 
-    final uri = Uri.parse(API_LOGIN);
+    final uri = Uri.parse(JWT_API_LOGIN);
     http.Response response = await csrfPost(
       uri,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: json.encode(formData),
     );
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return json.decode(response.body)['token'];
+      var responseBody = json.decode(response.body);
+      var accessToken = responseBody['access'];
+      var refreshToken = responseBody['refresh'];
+      WebSession.setSessionToken(accessToken);
+      WebSession.setRefreshToken(refreshToken);
+
+      return accessToken;
     } else {
       return NETWORKERROR_PREFIX + response.body;
     }
@@ -219,6 +226,18 @@ class WebSession {
       html.window.location.reload();
     }
     return token;
+  }
+
+  static String? getRefreshToken() {
+    var token = html.window.sessionStorage[KEY_REFRESH_TOKEN];
+    if (token == null) {
+      html.window.location.reload();
+    }
+    return token;
+  }
+
+  static void setRefreshToken(String token) {
+    html.window.sessionStorage[KEY_REFRESH_TOKEN] = token;
   }
 
   /// Get the csrf token from the cookie.
