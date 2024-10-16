@@ -25,6 +25,11 @@ def configure_cors(settings, hosts=[], ports=[]):
                 csrf_trusted_origins.append(f"{h}://{host}:{port}")
                 allowed_hosts.append(f"{host}")
 
+    for host in hosts:
+        for h in ["http","https"]:
+            cors_allowed_origins.append(f"{h}://{host}")
+            csrf_trusted_origins.append(f"{h}://{host}")
+
     if not hasattr(settings, 'ALLOWED_HOSTS'):
         settings.ALLOWED_HOSTS = []
     if not hasattr(settings, 'CORS_ALLOWED_ORIGINS'):
