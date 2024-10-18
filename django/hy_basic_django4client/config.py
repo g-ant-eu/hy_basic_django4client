@@ -127,16 +127,17 @@ def configure_django(settings):
     if 'rest_framework.permissions.IsAuthenticated' not in settings.REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES']:
         settings.REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'].append('rest_framework.permissions.IsAuthenticated')
     
-    settings.JWT_EXPIRATION_DELTA = timedelta(minutes=60) 
+    settings.JWT_EXPIRATION_DELTA = timedelta(hour=100) # to be changed also in client refresh time
     settings.SIMPLE_JWT = {
         # Lifetime of the access token 
         'ACCESS_TOKEN_LIFETIME': settings.JWT_EXPIRATION_DELTA, 
+        'REFRESH_TOKEN_LIFETIME': timedelta(days=36500),  # roughly 100 years
+        'ROTATE_REFRESH_TOKENS': False,  # Optional, can rotate tokens on access token refresh
+        'BLACKLIST_AFTER_ROTATION': False,  
         # Lifetime of the refresh token 
-        'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=5), 
-        'SLIDING_TOKEN_LIFETIME': timedelta(days=5), 
+        # 'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=5), 
+        # 'SLIDING_TOKEN_LIFETIME': timedelta(days=5), 
 
-        # 'ROTATE_REFRESH_TOKENS': False,
-        # 'BLACKLIST_AFTER_ROTATION': True,
         # 'ALGORITHM': 'HS256',
         # 'SIGNING_KEY': settings.SECRET_KEY,
         # 'VERIFYING_KEY': None,

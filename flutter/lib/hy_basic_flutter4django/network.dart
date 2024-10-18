@@ -13,6 +13,7 @@ const NETWORKERROR_PREFIX = "ERROR:";
 const KEY_USER = "user";
 const KEY_PWD = "pwd";
 const KEY_TOKEN = "token";
+const KEY_TOKEN_TIME = "token_time";
 const KEY_REFRESH_TOKEN = "refresh_token";
 
 class BF4DWebServerApi {
@@ -84,8 +85,16 @@ class BF4DWebServerApi {
     }
   }
 
-  static Map<String, String> getTokenHeader() {
+  static Future<Map<String, String>> getTokenHeader() async {
     var sessionToken = WebSession.getSessionToken();
+    if (sessionToken == null) {
+      // try to login again
+      var userPwd = WebSession.getSessionUser();
+      String res = await login(userPwd[0], userPwd[1]);
+      if (res.startsWith(NETWORKERROR_PREFIX)) {
+        throw Exception("Error in login: $res");
+      }
+    }
     var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
     return requestHeaders;
   }
@@ -125,7 +134,7 @@ class BF4DWebCall {
   Future<void> run() async {
     Map<String, String> requestHeaders = {};
     if (doAuth) {
-      requestHeaders = BF4DWebServerApi.getTokenHeader();
+      requestHeaders = await BF4DWebServerApi.getTokenHeader();
     }
     if (headers != null) {
       requestHeaders.addAll(headers!);
@@ -217,10 +226,25 @@ class WebSession {
   /// Set the token in the session.
   static void setSessionToken(String token) {
     html.window.sessionStorage[KEY_TOKEN] = token;
+    html.window.sessionStorage[KEY_TOKEN_TIME] =
+        DateTime.now().toUtc().millisecondsSinceEpoch.toString();
   }
 
   /// Get the token from the session. If not available a reload is triggered.
+  ///
+  /// if expired, null is returned.
   static String? getSessionToken() {
+    String? tokenTimeStr = html.window.sessionStorage[KEY_TOKEN_TIME];
+    if (tokenTimeStr == null) {
+      html.window.location.reload();
+    } else {
+      int tokenTime = int.parse(tokenTimeStr);
+      // the expire time is 100 hours, if the token is older than 90 hours, refresh it
+      if (DateTime.now().toUtc().millisecondsSinceEpoch - tokenTime >
+          90 * 60 * 60 * 1000) {
+        return null;
+      }
+    }
     var token = html.window.sessionStorage[KEY_TOKEN];
     if (token == null) {
       html.window.location.reload();
