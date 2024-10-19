@@ -140,18 +140,23 @@ class BF4DWebCall {
       requestHeaders.addAll(headers!);
     }
     try {
-      http.Response response;
-      if (isPut) {
-        response = await BF4DWebServerApi.csrfPut(Uri.parse(url),
-            headers: requestHeaders, body: json.encode(data));
-      } else if (isPost) {
-        response = await BF4DWebServerApi.csrfPost(Uri.parse(url),
-            headers: requestHeaders, body: json.encode(data));
-      } else {
-        response = await http.get(Uri.parse(url), headers: requestHeaders);
-      }
+      http.Response response = await call(requestHeaders);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         responseBody = response.body;
+      } else if (response.statusCode >= 400 && response.statusCode < 500) {
+        // reset token and try to login again
+        WebSession.clearSessionToken();
+        requestHeaders = await BF4DWebServerApi.getTokenHeader();
+        if (headers != null) {
+          requestHeaders.addAll(headers!);
+        }
+        response = await call(requestHeaders);
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          responseBody = response.body;
+        } else {
+          _hasError = true;
+          errorText = response.body;
+        }
       } else {
         _hasError = true;
         errorText = response.body;
@@ -160,6 +165,20 @@ class BF4DWebCall {
       _hasError = true;
       errorText = e.toString();
     }
+  }
+
+  Future<http.Response> call(Map<String, String> requestHeaders) async {
+    http.Response response;
+    if (isPut) {
+      response = await BF4DWebServerApi.csrfPut(Uri.parse(url),
+          headers: requestHeaders, body: json.encode(data));
+    } else if (isPost) {
+      response = await BF4DWebServerApi.csrfPost(Uri.parse(url),
+          headers: requestHeaders, body: json.encode(data));
+    } else {
+      response = await http.get(Uri.parse(url), headers: requestHeaders);
+    }
+    return response;
   }
 
   /// Get the response from the server.
@@ -228,6 +247,11 @@ class WebSession {
     html.window.sessionStorage[KEY_TOKEN] = token;
     html.window.sessionStorage[KEY_TOKEN_TIME] =
         DateTime.now().toUtc().millisecondsSinceEpoch.toString();
+  }
+
+  static void clearSessionToken() {
+    html.window.sessionStorage.remove(KEY_TOKEN);
+    html.window.sessionStorage.remove(KEY_TOKEN_TIME);
   }
 
   /// Get the token from the session. If not available a reload is triggered.
