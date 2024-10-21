@@ -85,16 +85,16 @@ class BF4DWebServerApi {
     }
   }
 
-  static Future<Map<String, String>> getTokenHeader() async {
-    var sessionToken = WebSession.getSessionToken();
-    if (sessionToken == null) {
-      // try to login again
+  static Future<Map<String, String>> getTokenHeader(
+      {bool loginAgain = false}) async {
+    if (loginAgain) {
       var userPwd = WebSession.getSessionUser();
       String res = await login(userPwd[0], userPwd[1]);
       if (res.startsWith(NETWORKERROR_PREFIX)) {
         throw Exception("Error in login: $res");
       }
     }
+    var sessionToken = WebSession.getSessionToken();
     var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
     return requestHeaders;
   }
