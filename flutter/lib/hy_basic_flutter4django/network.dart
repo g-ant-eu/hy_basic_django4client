@@ -95,6 +95,10 @@ class BF4DWebServerApi {
       if (res.startsWith(NETWORKERROR_PREFIX)) {
         throw Exception("Error in login: $res");
       }
+      sessionToken = WebSession.getSessionToken();
+    }
+    if (sessionToken == null) {
+      throw Exception("No session token available.");
     }
     var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
     return requestHeaders;
