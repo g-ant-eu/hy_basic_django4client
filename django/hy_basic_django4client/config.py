@@ -51,7 +51,7 @@ def configure_cors(settings, hosts=[], ports=[]):
                 settings.CSRF_TRUSTED_ORIGINS.append(origin)
 
 
-def configure_django(settings, jwt_expiration_delta_min=60):
+def configure_django(settings, jwt_expiration_delta_min:int=60):
     """
     Configure Django settings for JWT authentication and Whitenoise.
 
