@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:html' as html;
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 const doLocal = String.fromEnvironment('DOLOCAL', defaultValue: 'false');
 const localPort = String.fromEnvironment('LOCALPORT', defaultValue: '8000');
@@ -13,7 +14,6 @@ const NETWORKERROR_PREFIX = "ERROR:";
 const KEY_USER = "user";
 const KEY_PWD = "pwd";
 const KEY_TOKEN = "token";
-const KEY_TOKEN_TIME = "token_time";
 const KEY_REFRESH_TOKEN = "refresh_token";
 
 class BF4DWebServerApi {
@@ -42,6 +42,7 @@ class BF4DWebServerApi {
       var responseBody = json.decode(response.body);
       var accessToken = responseBody['access'];
       var refreshToken = responseBody['refresh'];
+
       WebSession.setSessionToken(accessToken);
       WebSession.setRefreshToken(refreshToken);
 
@@ -87,14 +88,14 @@ class BF4DWebServerApi {
 
   static Future<Map<String, String>> getTokenHeader(
       {bool loginAgain = false}) async {
-    if (loginAgain) {
+    var sessionToken = WebSession.getSessionToken();
+    if (sessionToken == null || loginAgain) {
       var userPwd = WebSession.getSessionUser();
       String res = await login(userPwd[0], userPwd[1]);
       if (res.startsWith(NETWORKERROR_PREFIX)) {
         throw Exception("Error in login: $res");
       }
     }
-    var sessionToken = WebSession.getSessionToken();
     var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
     return requestHeaders;
   }
@@ -245,33 +246,23 @@ class WebSession {
   /// Set the token in the session.
   static void setSessionToken(String token) {
     html.window.sessionStorage[KEY_TOKEN] = token;
-    html.window.sessionStorage[KEY_TOKEN_TIME] =
-        DateTime.now().toUtc().millisecondsSinceEpoch.toString();
   }
 
   static void clearSessionToken() {
     html.window.sessionStorage.remove(KEY_TOKEN);
-    html.window.sessionStorage.remove(KEY_TOKEN_TIME);
   }
 
   /// Get the token from the session. If not available a reload is triggered.
   ///
   /// if expired, null is returned.
   static String? getSessionToken() {
-    String? tokenTimeStr = html.window.sessionStorage[KEY_TOKEN_TIME];
-    if (tokenTimeStr == null) {
-      html.window.location.reload();
-    } else {
-      int tokenTime = int.parse(tokenTimeStr);
-      // the expire time is 100 hours, if the token is older than 90 hours, refresh it
-      if (DateTime.now().toUtc().millisecondsSinceEpoch - tokenTime >
-          90 * 60 * 60 * 1000) {
-        return null;
-      }
-    }
     var token = html.window.sessionStorage[KEY_TOKEN];
     if (token == null) {
       html.window.location.reload();
+    }
+    var expiryDate = JwtDecoder.getExpirationDate(token!);
+    if (expiryDate.isBefore(DateTime.now())) {
+      return null;
     }
     return token;
   }

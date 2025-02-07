@@ -51,7 +51,7 @@ def configure_cors(settings, hosts=[], ports=[]):
                 settings.CSRF_TRUSTED_ORIGINS.append(origin)
 
 
-def configure_django(settings):
+def configure_django(settings, jwt_expiration_delta_min=60):
     """
     Configure Django settings for JWT authentication and Whitenoise.
 
@@ -127,7 +127,7 @@ def configure_django(settings):
     if 'rest_framework.permissions.IsAuthenticated' not in settings.REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES']:
         settings.REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'].append('rest_framework.permissions.IsAuthenticated')
     
-    settings.JWT_EXPIRATION_DELTA = timedelta(hour=100) # to be changed also in client refresh time
+    settings.JWT_EXPIRATION_DELTA = timedelta(minutes=jwt_expiration_delta_min) # to be changed also in client refresh time
     settings.SIMPLE_JWT = {
         # Lifetime of the access token 
         'ACCESS_TOKEN_LIFETIME': settings.JWT_EXPIRATION_DELTA, 

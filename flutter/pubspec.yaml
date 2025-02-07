@@ -43,6 +43,8 @@ dependencies:
   # BSD
   http: ^0.13.5
 
+  jwt_decoder: ^2.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
