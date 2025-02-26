@@ -93,6 +93,7 @@ class BF4DWebServerApi {
       var userPwd = WebSession.getSessionUser();
       String res = await login(userPwd[0], userPwd[1]);
       if (res.startsWith(NETWORKERROR_PREFIX)) {
+        html.window.location.reload();
         throw Exception("Error in login: $res");
       }
       sessionToken = WebSession.getSessionToken();
@@ -262,9 +263,10 @@ class WebSession {
   static String? getSessionToken() {
     var token = html.window.sessionStorage[KEY_TOKEN];
     if (token == null) {
-      html.window.location.reload();
+      return null;
+      // html.window.location.reload();
     }
-    var expiryDate = JwtDecoder.getExpirationDate(token!);
+    var expiryDate = JwtDecoder.getExpirationDate(token);
     if (expiryDate.isBefore(DateTime.now())) {
       return null;
     }
