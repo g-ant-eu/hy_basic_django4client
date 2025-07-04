@@ -238,6 +238,13 @@ class WebSession {
     return web.window.sessionStorage.getItem(KEY_TOKEN) != null;
   }
 
+  static void logout() {
+    clearSessionToken();
+    web.window.sessionStorage.removeItem(KEY_USER);
+    web.window.sessionStorage.removeItem(KEY_PWD);
+    web.window.location.reload();
+  }
+
   /// Get the user and password from the session in format [user, pwd].
   static List<String> getSessionUser() {
     var user = web.window.sessionStorage.getItem(KEY_USER);
