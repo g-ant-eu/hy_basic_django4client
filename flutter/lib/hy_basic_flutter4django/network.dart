@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 const doLocal = String.fromEnvironment('DOLOCAL', defaultValue: 'false');
@@ -20,7 +20,7 @@ class BF4DWebServerApi {
   static String JWT_API_LOGIN = "${WEBAPP_URL}api/token/";
 
   static void goToAdmin() {
-    html.window.open("$WEBAPP_URL$ADMIN", 'admin');
+    web.window.open("$WEBAPP_URL$ADMIN", 'admin');
   }
 
   /// Login to get a token using credentials.
@@ -93,7 +93,7 @@ class BF4DWebServerApi {
       var userPwd = WebSession.getSessionUser();
       String res = await login(userPwd[0], userPwd[1]);
       if (res.startsWith(NETWORKERROR_PREFIX)) {
-        html.window.location.reload();
+        web.window.location.reload();
         throw Exception("Error in login: $res");
       }
       sessionToken = WebSession.getSessionToken();
@@ -101,7 +101,7 @@ class BF4DWebServerApi {
     if (sessionToken == null) {
       throw Exception("No session token available.");
     }
-    var requestHeaders = {"Authorization": "Bearer ${sessionToken!}"};
+    var requestHeaders = {"Authorization": "Bearer $sessionToken"};
     return requestHeaders;
   }
 
@@ -231,37 +231,39 @@ class WebSession {
 
   /// Check if user is logged.
   static bool isLogged() {
-    return html.window.sessionStorage[KEY_TOKEN] != null;
+    return web.window.sessionStorage.getItem(KEY_TOKEN) != null;
   }
 
   /// Get the user and password from the session in format [user, pwd].
   static List<String> getSessionUser() {
-    return [
-      html.window.sessionStorage[KEY_USER]!,
-      html.window.sessionStorage[KEY_PWD]!
-    ];
+    var user = web.window.sessionStorage.getItem(KEY_USER);
+    var pwd = web.window.sessionStorage.getItem(KEY_PWD);
+    if (user == null || pwd == null) {
+      return [];
+    }
+    return [user, pwd];
   }
 
   /// Set the user and password in the session.
   static void setSessionUser(String user, String pwd) {
-    html.window.sessionStorage[KEY_USER] = user;
-    html.window.sessionStorage[KEY_PWD] = pwd;
+    web.window.sessionStorage.setItem(KEY_USER, user);
+    web.window.sessionStorage.setItem(KEY_PWD, pwd);
   }
 
   /// Set the token in the session.
   static void setSessionToken(String token) {
-    html.window.sessionStorage[KEY_TOKEN] = token;
+    web.window.sessionStorage.setItem(KEY_TOKEN, token);
   }
 
   static void clearSessionToken() {
-    html.window.sessionStorage.remove(KEY_TOKEN);
+    web.window.sessionStorage.removeItem(KEY_TOKEN);
   }
 
   /// Get the token from the session. If not available a reload is triggered.
   ///
   /// if expired, null is returned.
   static String? getSessionToken() {
-    var token = html.window.sessionStorage[KEY_TOKEN];
+    var token = web.window.sessionStorage.getItem(KEY_TOKEN);
     if (token == null) {
       return null;
       // html.window.location.reload();
@@ -274,20 +276,20 @@ class WebSession {
   }
 
   static String? getRefreshToken() {
-    var token = html.window.sessionStorage[KEY_REFRESH_TOKEN];
+    var token = web.window.sessionStorage.getItem(KEY_REFRESH_TOKEN);
     if (token == null) {
-      html.window.location.reload();
+      web.window.location.reload();
     }
     return token;
   }
 
   static void setRefreshToken(String token) {
-    html.window.sessionStorage[KEY_REFRESH_TOKEN] = token;
+    web.window.sessionStorage.setItem(KEY_REFRESH_TOKEN, token);
   }
 
   /// Get the csrf token from the cookie.
   static String? getCsrfToken() {
-    final cookie = html.document.cookie!;
+    final cookie = web.document.cookie;
     if (cookie.isEmpty) {
       return null;
     }
