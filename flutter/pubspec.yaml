@@ -41,7 +41,7 @@ dependencies:
   ############################
 
   # BSD
-  http: ^0.13.5
+  http: ^1.2.1
 
   jwt_decoder: ^2.0.1
 
