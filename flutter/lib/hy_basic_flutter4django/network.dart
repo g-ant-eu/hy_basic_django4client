@@ -222,10 +222,14 @@ class WebSession {
 
       return null;
     } else {
-      var errorMap =
-          jsonDecode(responseText.replaceFirst(NETWORKERROR_PREFIX, ""));
-      var errorText = errorMap['error'] ?? responseText;
-      return errorText;
+      try {
+        var errorMap =
+            jsonDecode(responseText.replaceFirst(NETWORKERROR_PREFIX, ""));
+        var errorText = errorMap['error'] ?? responseText;
+        return errorText;
+      } on Exception catch (e) {
+        return responseText.replaceFirst(NETWORKERROR_PREFIX, "");
+      }
     }
   }
 
