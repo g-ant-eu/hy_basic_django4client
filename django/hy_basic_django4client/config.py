@@ -51,7 +51,7 @@ def configure_cors(settings, hosts=[], ports=[]):
                 settings.CSRF_TRUSTED_ORIGINS.append(origin)
 
 
-def configure_django(settings, jwt_expiration_delta_min:int=60):
+def configure_django(settings, jwt_expiration_delta_min:int=60, use_whitenoise:bool=False):
     """
     Configure Django settings for JWT authentication and Whitenoise.
 
@@ -110,14 +110,15 @@ def configure_django(settings, jwt_expiration_delta_min:int=60):
         
         
 
-    # Whitenoise
-    if 'whitenoise.runserver_nostatic' not in settings.INSTALLED_APPS:
-        # add it after django.contrib.messages
-        settings.INSTALLED_APPS.insert(0, 'whitenoise.runserver_nostatic')
-    
-    # Add middleware for Whitenoise
-    if 'whitenoise.middleware.WhiteNoiseMiddleware' not in settings.MIDDLEWARE:
-        settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.security.SecurityMiddleware') + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    if use_whitenoise:
+        # Whitenoise
+        if 'whitenoise.runserver_nostatic' not in settings.INSTALLED_APPS:
+            # add it after django.contrib.messages
+            settings.INSTALLED_APPS.insert(0, 'whitenoise.runserver_nostatic')
+        
+        # Add middleware for Whitenoise
+        if 'whitenoise.middleware.WhiteNoiseMiddleware' not in settings.MIDDLEWARE:
+            settings.MIDDLEWARE.insert(settings.MIDDLEWARE.index('django.middleware.security.SecurityMiddleware') + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     
     # Configure JWT
     # add jwt auth if not already added
@@ -148,25 +149,26 @@ def configure_django(settings, jwt_expiration_delta_min:int=60):
         # 'TOKEN_TYPE_CLAIM': 'token_type',
     }
     
-    # Configure static files for Whitenoise
-    staticFolderName = 'static'
-    if not hasattr(settings, 'STATIC_ROOT' ) or not settings.STATIC_ROOT:
-        settings.STATIC_ROOT = os.path.join(settings.BASE_DIR.parent, staticFolderName) 
-        # check if the static folder exists and create it if not
-        if not os.path.exists(settings.STATIC_ROOT):
-            os.makedirs(settings.STATIC_ROOT)
-    if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
-        settings.STATIC_URL = f'/{staticFolderName}/'
+    if use_whitenoise:
+        # Configure static files for Whitenoise
+        staticFolderName = 'static'
+        if not hasattr(settings, 'STATIC_ROOT' ) or not settings.STATIC_ROOT:
+            settings.STATIC_ROOT = os.path.join(settings.BASE_DIR.parent, staticFolderName) 
+            # check if the static folder exists and create it if not
+            if not os.path.exists(settings.STATIC_ROOT):
+                os.makedirs(settings.STATIC_ROOT)
+        if not hasattr(settings, 'STATIC_URL') or not settings.STATIC_URL:
+            settings.STATIC_URL = f'/{staticFolderName}/'
 
-    if not hasattr(settings, 'STORAGES'):
-        settings.STORAGES = {
-            f"{staticFolderName}": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-            f"staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-        }
+        if not hasattr(settings, 'STORAGES'):
+            settings.STORAGES = {
+                f"{staticFolderName}": {
+                    "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+                },
+                f"staticfiles": {
+                    "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+                },
+            }
 
     if not hasattr(settings, 'MEDIA_ROOT'):
         settings.MEDIA_ROOT = os.path.join(settings.BASE_DIR.parent, 'media')

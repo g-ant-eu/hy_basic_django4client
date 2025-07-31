@@ -1,6 +1,6 @@
 [project]
 name = "hy_basic_django4client"
-version = "0.2.0"
+version = "0.3.0"
 description = "A small library to integrate JWT authentication and Whitenoise with Django."
 authors = [
     {name = "Andrea Antonello", email = "andrea.antonello@gmail.com"},
