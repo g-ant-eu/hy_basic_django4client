@@ -148,7 +148,10 @@ def configure_django(settings, jwt_expiration_delta_min:int=60, use_whitenoise:b
         # 'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
         # 'TOKEN_TYPE_CLAIM': 'token_type',
     }
-    
+
+    settings.SESSION_COOKIE_SAMESITE = "Lax"
+    settings.SESSION_COOKIE_SECURE = not settings.DEBUG
+
     if use_whitenoise:
         # Configure static files for Whitenoise
         staticFolderName = 'static'

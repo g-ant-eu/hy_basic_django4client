@@ -15,6 +15,12 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import  csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth import login as django_session_login
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -84,6 +90,31 @@ def login(request):
 @permission_classes((IsAuthenticated,))
 def get_csrf_token(request):
     return CrsfHandler.get_csrf_token(request)
+
+
+class TokenObtainPairWithSessionView(TokenObtainPairView):
+    """
+    Same as TokenObtainPairView but also logs the user into a Django session,
+    so the browser gets a 'sessionid' cookie (for /admin/).
+    """
+    serializer_class = TokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        # Run the normal SimpleJWT flow
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # serializer.user is set after validation
+        user = serializer.user
+
+        # Create Django session (sets 'sessionid' cookie on the response)
+        # DRF Request -> Django HttpRequest is request._request
+        django_session_login(request._request, user)
+
+        # Return the normal token response body
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
 
 class JWTAuthHandler:
     """
@@ -218,11 +249,11 @@ class JWTAuthHandler:
         Configure Django urlpatterns for JWT authentication.
         """
         from django.urls import path
-        from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+        from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
         # add jwt urls if not already added
         if 'rest_framework_simplejwt.views.TokenObtainPairView' not in urlpatterns:
-            urlpatterns.append(path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'))
+            urlpatterns.append(path('api/token/', TokenObtainPairWithSessionView.as_view(), name='token_obtain_pair'))
         if 'rest_framework_simplejwt.views.TokenRefreshView' not in urlpatterns:
             urlpatterns.append(path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'))
         if 'rest_framework_simplejwt.views.TokenVerifyView' not in urlpatterns:
