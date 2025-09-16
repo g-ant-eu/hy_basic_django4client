@@ -19,8 +19,12 @@ const KEY_REFRESH_TOKEN = "refresh_token";
 class BF4DWebServerApi {
   static String JWT_API_LOGIN = "${WEBAPP_URL}api/token/";
 
-  static void goToAdmin() {
-    web.window.open("$WEBAPP_URL$ADMIN", 'admin');
+  static void goToAdmin({openInNewTab = true}) {
+    if (openInNewTab) {
+      web.window.open("$WEBAPP_URL$ADMIN", 'admin');
+    } else {
+      web.window.location.href = "$WEBAPP_URL$ADMIN";
+    }
   }
 
   /// Login to get a token using credentials.
